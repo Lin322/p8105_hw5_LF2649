@@ -1,0 +1,209 @@
+---
+title: "p8105_hw5_LF2649"
+author: "Lin Feng"
+date: '`r format(Sys.time(), "%Y-%m-%d")`'
+output: github_document
+
+
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(patchwork)
+library(p8105.datasets)
+knitr::opts_chunk$set(
+	fig.width = 6, 
+  fig.asp = .6,
+  out.width = "90%"
+)
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis" 
+)
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+```
+
+
+# Problem 1
+
+Read in data.
+
+```{r}
+homicide_df = 
+  read_csv("homicide_data/homicide-data.csv") %>% 
+  mutate(
+    city_state = str_c(city, state, sep = "_"),
+    resolved = case_when(
+      disposition == "Closed without arrest" ~ "unsolved",
+      disposition == "Open/No arrest"        ~ "unsolved",
+      disposition == "Closed by arrest"      ~ "solved",
+    )
+  ) %>% 
+  select(city_state, resolved) %>% 
+  filter(city_state != "Tulsa_AL")
+```
+
+
+Let's look at this a bit
+
+```{r}
+aggregate_df = 
+  homicide_df %>% 
+  group_by(city_state) %>% 
+  summarize(
+    hom_total = n(),
+    hom_unsolved = sum(resolved == "unsolved")
+  )
+```
+
+Can I do a prop test for a single city?
+
+```{r}
+prop.test(
+  aggregate_df %>% filter(city_state == "Baltimore_MD") %>% pull(hom_unsolved), 
+  aggregate_df %>% filter(city_state == "Baltimore_MD") %>% pull(hom_total)) %>% 
+  broom::tidy()
+```
+
+Try to iterate ........
+
+```{r}
+results_df = 
+  aggregate_df %>% 
+  mutate(
+    prop_tests = map2(.x = hom_unsolved, .y = hom_total, ~prop.test(x = .x, n = .y)),
+    tidy_tests = map(.x = prop_tests, ~broom::tidy(.x))
+  ) %>% 
+  select(-prop_tests) %>% 
+  unnest(tidy_tests) %>% 
+  select(city_state, estimate, conf.low, conf.high)
+```
+
+
+
+```{r}
+results_df %>% 
+  mutate(city_state = fct_reorder(city_state, estimate)) %>% 
+  ggplot(aes(x = city_state, y = estimate)) +
+  geom_point() + 
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high)) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+
+
+```{r, error = TRUE}
+city_prop_test = function(df) {
+  
+  n_unsovled 
+  n_total  
+  
+  prop.test(.....)
+  
+}
+homicide_df = 
+  read_csv("data/homicide-data.csv") %>% 
+  mutate(
+    city_state = str_c(city, state, sep = "_"),
+    resolved = case_when(
+      disposition == "Closed without arrest" ~ "unsolved",
+      disposition == "Open/No arrest"        ~ "unsolved",
+      disposition == "Closed by arrest"      ~ "solved",
+    )
+  ) %>% 
+  select(city_state, resolved) %>% 
+  filter(city_state != "Tulsa_AL") %>% 
+  nest(data = resolved)
+```
+
+
+
+
+
+## Problem 2
+
+### Import and tidy the data
+Create a tidy dataframe containing data from all participants, including the subject ID, arm, and observations over time:
+
+*Start with a dataframe containing all file names; the list.files function will help
+
+*Iterate over file names and read in data for each subject using purrr::map and saving the result as a new variable in the dataframe
+
+*Tidy the result; manipulate file names to include control arm and subject ID, make sure weekly observations are “tidy”, and do any other tidying that’s necessary
+
+
+```{r}
+readin = function (x){
+  read_csv(x)
+}
+
+participants_df = 
+  tibble(
+    path = list.files("data"),
+  ) %>% 
+  mutate(
+    path = str_c("./data/", path),
+    data = map(path, readin)) %>% 
+  unnest() %>% 
+  separate(path, sep="/", into = c("1","2","path") ) %>% 
+  select(3:week_8)%>% 
+  separate(path, sep = ".csv", into = c("id", "csv")) %>% 
+  separate(id, sep = "_", into = c("arm", "id")) %>% 
+  select(id, arm, week_1:week_8)
+
+ptcp_tidy =
+  participants_df %>% 
+  pivot_longer(
+    "week_1":"week_8",
+    names_to = "week",
+    values_to = "values"
+  )
+
+```
+### Spaghetti plot
+
+*Make a spaghetti plot showing observations on each subject over time, and comment on differences between groups
+
+```{r}
+spaghetti_plot = 
+ptcp_tidy %>% 
+  ggplot(aes(x = week, y = values, group = id)) + 
+  geom_line() + 
+  facet_grid(. ~ arm)+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+  
+```
+
+
+## Problem 3
+
+### Generate 5000 datasets
+```{r}
+#Create a function to generate dataset
+
+sample = function(n, mean, sd){
+samp_data = tibble(
+samp = rnorm(n, mean, sd)
+)
+samp_result = nest(samp_data) %>%
+mutate(
+t_test = map(.x = data, ~t.test(x = .x,mu=0, alternative = 'two.sided', paired = FALSE, conf.level = 0.95))
+)
+return(samp_result)
+}
+
+#Test the function
+sample(30, 0, 5)
+
+
+
+#Generate 5000 datasets
+samp_5000 = 
+  rerun(5000, sample(30, 0, 5)) %>% 
+  bind_rows()
+  
+```
+
+
