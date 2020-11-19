@@ -233,9 +233,12 @@ sim_results =
 
 * Make a plot showing the proportion of times the null was rejected (the power of the test) on the y axis and the true value of μ on the x axis. Describe the association between effect size and power.
 
+**Answer:**
+As the mean increases we can find a trend that the power also increases. 
+
 ```{r}
 
-plot = 
+plot_1 = 
 sim_results %>% 
   mutate(
     reject = ifelse( pvalue < 0.05, 1, 0)) %>% 
@@ -245,8 +248,31 @@ sim_results %>%
         true_mean = str_c("mean=", mn)) %>% 
   slice(1) %>% 
   ggplot(aes(x = true_mean, y = proportion)) + 
-  geom_line()
+  geom_point()
 
-  
+
+
+```
+
+
+* Make a plot showing the average estimate of μ^ on the y axis and the true value of μ on the x axis. 
+
+```{r}
+plot_2 = 
+sim_results %>% 
+  group_by(mn) %>% 
+  mutate (
+    avg_mu_hat = mean(mean), 
+    true_mean = str_c("mean=", mn)) %>% 
+  slice(1) %>% 
+  ggplot(aes(x = true_mean, y = avg_mu_hat)) + 
+  geom_point()
+```
+
+
+* Make a second plot (or overlay on the first) the average estimate of μ^ only in samples for which the null was rejected on the y axis and the true value of μ on the x axis. Is the sample average of μ^ across tests for which the null is rejected approximately equal to the true value of μ? Why or why not?
+
+```{r}
+
 ```
 
