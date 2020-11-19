@@ -28,9 +28,9 @@ scale_fill_discrete = scale_fill_viridis_d
 
 # Problem 1
 
-Read in data.
+## Read in data.
 
-```{r}
+```{r, include = FALSE}
 homicide_df = 
   read_csv("homicide_data/homicide-data.csv") %>% 
   mutate(
@@ -46,9 +46,9 @@ homicide_df =
 ```
 
 
-Let's look at this a bit
 
-```{r}
+
+```{r, include = FALSE}
 aggregate_df = 
   homicide_df %>% 
   group_by(city_state) %>% 
@@ -58,18 +58,18 @@ aggregate_df =
   )
 ```
 
-Can I do a prop test for a single city?
+## Test for a single city
 
-```{r}
+```{r, include = FALSE}
 prop.test(
   aggregate_df %>% filter(city_state == "Baltimore_MD") %>% pull(hom_unsolved), 
   aggregate_df %>% filter(city_state == "Baltimore_MD") %>% pull(hom_total)) %>% 
   broom::tidy()
 ```
 
-Try to iterate ........
+## Try to iterate 
 
-```{r}
+```{r, include = FALSE}
 results_df = 
   aggregate_df %>% 
   mutate(
@@ -83,7 +83,7 @@ results_df =
 
 
 
-```{r}
+```{r, include = FALSE}
 results_df %>% 
   mutate(city_state = fct_reorder(city_state, estimate)) %>% 
   ggplot(aes(x = city_state, y = estimate)) +
@@ -94,7 +94,7 @@ results_df %>%
 
 
 
-```{r, error = TRUE}
+```{r, include = FALSE}
 city_prop_test = function(df) {
   
   n_unsovled 
@@ -122,9 +122,9 @@ homicide_df =
 
 
 
-## Problem 2
+# Problem 2
 
-### Import and tidy the data
+## Import and tidy the data
 Create a tidy dataframe containing data from all participants, including the subject ID, arm, and observations over time:
 
 *Start with a dataframe containing all file names; the list.files function will help
@@ -162,7 +162,7 @@ ptcp_tidy =
   )
 
 ```
-### Spaghetti plot
+## Spaghetti plot
 
 *Make a spaghetti plot showing observations on each subject over time, and comment on differences between groups
 
@@ -177,11 +177,13 @@ ptcp_tidy %>%
 ```
 
 
-## Problem 3
+# Problem 3
 
-### Generate 5000 datasets
+## Generate 5000 datasets
 
 ```{r}
+
+#Create the function
 sim_ttest = function(n, mu = 0, sigma = 5) {
  
   sim_data = tibble(
@@ -200,21 +202,21 @@ sim_ttest = function(n, mu = 0, sigma = 5) {
 
 
 output = vector("list", 5000)
-for (i in 1:5000) {
-  output[[i]] = sim_ttest(30)
+  for (i in 1:5000) {
+    output[[i]] = sim_ttest(30)
 }
 
 sim_results = bind_rows(output)
 
 
-#test
+#test with mean = 0
 sim_results1 =
   rerun(5000, sim_ttest(30, 1, 5)) %>%
   bind_rows()
 ```
 
 
-Simulating across multiple means.
+## Simulating across multiple means.
 ```{r}
 
 sim_results = 
