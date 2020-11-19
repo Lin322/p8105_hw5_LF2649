@@ -32,7 +32,7 @@ scale_fill_discrete = scale_fill_viridis_d
 
 ```{r, include = FALSE}
 homicide_df = 
-  read_csv("homicide_data/homicide-data.csv") %>% 
+  read_csv("./homicide-data.csv") %>% 
   mutate(
     city_state = str_c(city, state, sep = "_"),
     resolved = case_when(
@@ -104,7 +104,7 @@ city_prop_test = function(df) {
   
 }
 homicide_df = 
-  read_csv("data/homicide-data.csv") %>% 
+  read_csv("./homicide-data.csv") %>% 
   mutate(
     city_state = str_c(city, state, sep = "_"),
     resolved = case_when(
@@ -218,7 +218,6 @@ sim_results1 =
 
 ## Simulating across multiple means.
 ```{r}
-
 sim_results = 
   tibble(mn = c(0, 1, 2, 3, 4, 5, 6)) %>% 
   mutate(
@@ -227,15 +226,13 @@ sim_results =
   select(-output_lists) %>% 
   unnest(estimate_dfs)
 
-
-
 ```
 
 ## Making plot
 
 * Make a plot showing the proportion of times the null was rejected (the power of the test) on the y axis and the true value of μ on the x axis. Describe the association between effect size and power.
 
-**Answer:**
+**Answer_1:**
 As the mean increases we can find a trend that the power also increases. 
 
 ```{r}
@@ -278,7 +275,7 @@ sim_results %>%
 
 
 
-**Answer:**
+**Answer_2:**
 The two plots are not the same. The reason could be that if we can reject the null when true_mean is small, we estimated the mean_hat will be greatly different from the true than when the true_mean is larger. 
 
 
