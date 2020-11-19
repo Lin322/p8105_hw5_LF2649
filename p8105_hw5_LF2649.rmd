@@ -263,16 +263,36 @@ sim_results %>%
   group_by(mn) %>% 
   mutate (
     avg_mu_hat = mean(mean), 
-    true_mean = str_c("mean=", mn)) %>% 
+    true_mean = mn) %>% 
   slice(1) %>% 
   ggplot(aes(x = true_mean, y = avg_mu_hat)) + 
-  geom_point()
+  geom_point() 
+
 ```
 
 
-* Make a second plot (or overlay on the first) the average estimate of μ^ only in samples for which the null was rejected on the y axis and the true value of μ on the x axis. Is the sample average of μ^ across tests for which the null is rejected approximately equal to the true value of μ? Why or why not?
+* Make a second plot (or overlay on the first) the average estimate of μ^ only in samples for which the null was rejected on the y axis and the true value of μ on the x axis.
+* Is the sample average of μ^ across tests for which the null is rejected approximately equal to the true value of μ? Why or why not?
+
+
+
+**Answer:**
+The two plots are not the same. The reason could be that if we can reject the null when true_mean is small, we estimated the mean_hat will be greatly different from the true than when the true_mean is larger. 
+
 
 ```{r}
-
+plot_3 = 
+sim_results %>% 
+  filter(pvalue < 0.05) %>% 
+  group_by(mn) %>% 
+  mutate (
+    avg_mu_hat = mean(mean), 
+    true_mean =  mn) %>% 
+  slice(1) %>% 
+  ggplot(aes(x = true_mean, y = avg_mu_hat)) + 
+  geom_point()
+  
+  
+plot_2 + plot_3
 ```
 
